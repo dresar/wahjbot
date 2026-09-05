@@ -1,0 +1,12 @@
+{
+  "users": {},
+  "groups": {},
+  "settings": {
+    "selfMode": false
+  },
+  "stats": {},
+  "sewa": {
+    "enabled": false,
+    "groups": {}
+  }
+}

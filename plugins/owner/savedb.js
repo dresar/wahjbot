@@ -1,0 +1,61 @@
+const fs = require('fs')
+const path = require('path')
+const config = require('../../config')
+
+const pluginConfig = {
+    name: 'savedb',
+    alias: ['backupdb', 'downloaddb', 'getdb'],
+    category: 'owner',
+    description: 'Download file database',
+    usage: '.savedb',
+    example: '.savedb',
+    isOwner: true,
+    isPremium: false,
+    isGroup: false,
+    isPrivate: false,
+    cooldown: 30,
+    limit: 0,
+    isEnabled: true
+}
+
+async function handler(m, { sock }) {
+    if (!config.isOwner(m.sender)) {
+        return m.reply('❌ *Owner Only!*')
+    }
+    
+    const dbPath = path.join(process.cwd(), 'database', 'db.json')
+    
+    if (!fs.existsSync(dbPath)) {
+        return m.reply(`❌ File database tidak ditemukan!`)
+    }
+    
+    try {
+        const stats = fs.statSync(dbPath)
+        const data = fs.readFileSync(dbPath)
+        
+        const now = new Date()
+        const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19)
+        const fileName = `db_backup_${timestamp}.json`
+        
+        await sock.sendMessage(m.chat, {
+            document: data,
+            fileName: fileName,
+            mimetype: 'application/json',
+            caption: `📦 *ᴅᴀᴛᴀʙᴀsᴇ ʙᴀᴄᴋᴜᴘ*\n\n` +
+                `╭┈┈⬡「 📋 *ɪɴғᴏ* 」\n` +
+                `┃ 📁 File: \`db.json\`\n` +
+                `┃ 📊 Size: \`${(stats.size / 1024).toFixed(2)} KB\`\n` +
+                `┃ 📅 Date: \`${now.toLocaleDateString('id-ID')}\`\n` +
+                `┃ ⏰ Time: \`${now.toLocaleTimeString('id-ID')}\`\n` +
+                `╰┈┈┈┈┈┈┈┈⬡`
+        }, { quoted: m })
+        
+    } catch (error) {
+        await m.reply(`❌ Error: ${error.message}`)
+    }
+}
+
+module.exports = {
+    config: pluginConfig,
+    handler
+}
